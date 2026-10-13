@@ -1,6 +1,7 @@
 package com.example.filtrarnumeros
 
 import android.os.Bundle
+import android.widget.Button
 import android.widget.RadioGroup
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
@@ -31,8 +32,9 @@ class MainActivity : AppCompatActivity() {
     lateinit var tv_arraysinfiltrar: TextView
     lateinit var tv_arrayfiltrado: TextView
     lateinit var rg_filtrarnumeros: RadioGroup
+    lateinit var button_inicializar: Button
     //Defino el Array de enteros que sirve como base para filtrar
-    val miarrayenteros=Array<Int>(10){Random.nextInt(1,1000)}
+    var miarrayenteros=Array<Int>(10,{ Random.nextInt(1,1000)})
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,18 +59,68 @@ class MainActivity : AppCompatActivity() {
         this.tv_arrayfiltrado=findViewById<TextView>(R.id.arrayfiltradoTV)
         this.tv_arraysinfiltrar=findViewById<TextView>(R.id.arraysinFiltrarTV)
         this.rg_filtrarnumeros=findViewById<RadioGroup>(R.id.radioGroup)
+        this.button_inicializar=findViewById<Button>(R.id.boton_inicializar)
+
+        this.button_inicializar.setOnClickListener {
+            miarrayenteros=Array(10){ Random.nextInt(1,1000) }
+            this.tv_arraysinfiltrar.text=miarrayenteros.contentToString()
+            this.tv_arrayfiltrado.text=""
+        }
+
         this.tv_arraysinfiltrar.text=miarrayenteros.contentToString()
 
         //Establezco los escuchadores que pueda necesitar
         //Solo establezco escuchador para el RadioGroup
-        rg_filtrarnumeros.setOnCheckedChangeListener { group, i ->  }
-        var miobjeto_escuchador= claseListenerRadioGroup(miarrayenteros,tv_arrayfiltrado)
-        rg_filtrarnumeros.setOnCheckedChangeListener(miobjeto_escuchador)
+        rg_filtrarnumeros.setOnCheckedChangeListener { group, i ->
+        //Esto representa el metodo onChekedChanged de la interface
+            //RadioGroup.OnCheckedChangeListener
+            when (i) {
+                R.id.filtrarPrimosRB -> tv_arrayfiltrado.text = filtrar(miarrayenteros) { n: Int ->
+                    if (n <= 1) {
+                        false
+                    } else {
+                        //!(2 until n).any ({ i -> n % i == 0 })
+                        var es_primo = true
+                        var cont = 2
+                        while (es_primo && cont < (n / 2)) {
+                            if (n % cont == 0) {
+                                es_primo = false
+                            }
+                            cont++
 
+                        }
+                        es_primo
+                    }
+                }.contentToString()
+
+                R.id.filtrarMagicosRB -> tv_arrayfiltrado.text = filtrar(miarrayenteros) { n ->
+                    var cubo = n * n * n
+                    var suma = 0
+                    while (cubo > 0) {
+                        suma += cubo % 10
+                        cubo /= 10
+                    }
+                    n == suma
+                }.contentToString()
+
+                else -> tv_arrayfiltrado.text =
+                    filtrar(miarrayenteros) { it.toString() == it.toString().reversed() }.contentToString()
+
+
+            }
+
+        }
+
+
+    /* Versión clasica para asignar escuchador
+    var miobjeto_escuchador=
+            ClaseListenerRadioGroup(miarrayenteros,tv_arrayfiltrado)
+        rg_filtrarnumeros.setOnCheckedChangeListener(miobjeto_escuchador)
+*/
 
     }
 }
-class claseListenerRadioGroup(val miarray:Array<Int>,val miTextView: TextView):RadioGroup.OnCheckedChangeListener {
+class ClaseListenerRadioGroup(val miarray:Array<Int>,val miTextView: TextView):RadioGroup.OnCheckedChangeListener {
 
     override fun onCheckedChanged(p0: RadioGroup, id_RadioButton: Int) {
 
@@ -84,7 +136,7 @@ class claseListenerRadioGroup(val miarray:Array<Int>,val miTextView: TextView):R
                         if (n % cont == 0) {
                             es_primo = false
                         }
-                        cont++
+                      cont++
 
                     }
                     es_primo
